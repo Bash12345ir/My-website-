@@ -1,0 +1,132 @@
+<!-- index.html --><!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bashir VPN - Welcome</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🔥 Bashir VPN 🔥</h1>
+    <p>Created by Hagenimana Bashir Sudais</p>
+    <nav>
+      <a href="login.php">Login</a>
+      <a href="register.php">Register</a>
+      <a href="dashboard.html">Dashboard</a>
+    </nav>
+  </header>  <main>
+    <section>
+      <h2>Welcome to Bashir VPN</h2>
+      <p>Unlimited VPN Configs for all 195 countries – Free. Fast. Smart.</p>
+    </section><section>
+  <h3>Languages</h3>
+  <select id="lang-select">
+    <option value="en">English</option>
+    <option value="fr">Français</option>
+    <option value="rw">Kinyarwanda</option>
+  </select>
+</section>
+
+<section>
+  <button onclick="toggleDarkMode()">🌙 Toggle Dark Mode</button>
+</section>
+
+  </main>  <footer>
+    <p>Created by Hagenimana Bashir Sudais | © 2025</p>
+  </footer>  <script src="assets/js/i18n.js"></script>  <script src="assets/js/darkmode.js"></script></body>
+</html><!-- login.php --><?php
+session_start();
+require_once 'config.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $email = $_POST['email'];
+  $password = $_POST['password'];
+  $stmt = $conn->prepare("SELECT * FROM users WHERE email=?");
+  $stmt->bind_param("s", $email);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  if ($result->num_rows === 1) {
+    $user = $result->fetch_assoc();
+    if (password_verify($password, $user['password'])) {
+      $_SESSION['user'] = $user['email'];
+      header("Location: dashboard.html");
+      exit();
+    }
+  }
+  echo "Login failed.";
+}
+?><form method="post">
+  <input type="email" name="email" placeholder="Email" required />
+  <input type="password" name="password" placeholder="Password" required />
+  <button type="submit">Login</button>
+</form><!-- register.php --><?php
+require_once 'config.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $email = $_POST['email'];
+  $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+  $stmt = $conn->prepare("INSERT INTO users (email, password) VALUES (?, ?)");
+  $stmt->bind_param("ss", $email, $password);
+  if ($stmt->execute()) {
+    echo "Registered. Check your email for verification.";
+  } else {
+    echo "Error: " . $conn->error;
+  }
+}
+?><form method="post">
+  <input type="email" name="email" required />
+  <input type="password" name="password" required />
+  <button type="submit">Register</button>
+</form><!-- config.php --><?php
+$host = "localhost";
+$dbname = "bashir_vpn";
+$username = "root";
+$password = "";
+$conn = new mysqli($host, $username, $password, $dbname);
+if ($conn->connect_error) die("DB error: " . $conn->connect_error);
+?><!-- upload_config.php --><?php
+require 'config.php';
+session_start();
+if (!isset($_SESSION['user'])) die("Unauthorized");
+if ($_FILES['config_file']) {
+  $filename = basename($_FILES['config_file']['name']);
+  $target = "uploads/" . $filename;
+  move_uploaded_file($_FILES['config_file']['tmp_name'], $target);
+  echo "Uploaded successfully.";
+}
+?><form enctype="multipart/form-data" method="post">
+  <input type="file" name="config_file" />
+  <button type="submit">Upload</button>
+</form><!-- ai_shekh.php --><?php
+// Basic AI reply using OpenAI API
+$prompt = $_POST['prompt'] ?? '';
+$apiKey = 'sk-proj-Rvs38...';
+$ch = curl_init('https://api.openai.com/v1/chat/completions');
+curl_setopt_array($ch, [
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_POST => true,
+  CURLOPT_HTTPHEADER => [
+    'Content-Type: application/json',
+    'Authorization: Bearer ' . $apiKey
+  ],
+  CURLOPT_POSTFIELDS => json_encode([
+    'model' => 'gpt-4',
+    'messages' => [['role' => 'user', 'content' => $prompt]]
+  ])
+]);
+$response = curl_exec($ch);
+echo $response;
+?><form method="post">
+  <input name="prompt" placeholder="Ask Shekh AI anything..." />
+  <button>Ask</button>
+</form><!-- assets/js/darkmode.js -->function toggleDarkMode() { document.body.classList.toggle('dark'); }
+
+<!-- .htaccess (for clean URLs on InfinityFree or others) -->RewriteEngine On RewriteCond %{REQUEST_FILENAME} !-f RewriteCond %{REQUEST_FILENAME} !-d RewriteRule ^(.*)$ index.html [QSA,L]
+
+<!-- README.md -->Bashir VPN
+
+Complete VPN Config Generator + AI Web Platform
+
+Built by Hagenimana Bashir Sudais
+
+Auto language support, secure login, voice AI, uploads & analytics
+
+
